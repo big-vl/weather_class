@@ -66,10 +66,12 @@ class Weather:
                         'message':'Error connect'}
             if self.weather_data['cod'] == '404':
                 return {'app_name': self.app_name, 
-                        'message':'City not found'}
+                        'message': 'City not found',
+                        'cod_error': self.weather_data['cod']}
             else:
                 return {'app_name': self.app_name, 
-                         'message':'Error content'}
+                         'message': 'Error content',
+                         'cod_error': self.weather_data['cod']}
                          
     def ai(self):
         temp = int(self.temp())
@@ -109,7 +111,7 @@ class Weather:
 def mini_weather():
     app_name = 'Weather Mini'
     city_name = 'Krasnodar'
-    api_key = 'a5f756f97a8cf1082787e8d36699c449'
+    api_key = 'a5f7082787e8d36699c449'
     server = 'http://api.openweathermap.org/data/2.5/weather'
     weather = Weather(app_name, api_key, server, city_name)
     if request.method == 'POST':

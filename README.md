@@ -29,4 +29,7 @@ Default:
 ## Error:
 Error connect - wrong internet connection \
 Error content - wrong API key or wrong request
+# Log change
+Add code error display \
+401 - api key not correct
 
