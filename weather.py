@@ -73,7 +73,6 @@ class Weather:
                          
     def ai(self):
         temp = int(self.temp())
-        temp = int(-2)
         ai_answer = {-60:'Наступил ледниковый период',
                     -30:'Даже медведям холодно:)',
                     -25:'Оденьте шубу',
