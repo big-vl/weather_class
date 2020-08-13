@@ -1,0 +1,19 @@
+<html>
+<head>
+	<title>{{ app_name }} : {{ city }}</title>
+</head>
+<body>
+	{{ message }}
+	Дата: {{ date }} <br>
+	Температура - {{ temp }} <br>
+	Давление - {{ pressure }} <br>
+	Скорость ветра - {{ speed_wind }} <br>
+	Совет от {{ app_name }}: {{ ai }}
+	<form action="/" method="POST">
+	  <label for="city_label">Введите город:</label><br>
+	  <input type="text" id="city_label" name="city" value="{{ city }}">
+	  <br>
+	  <input type="submit" value="Сменить город / Обновить данные">
+	</form> 
+</body>
+</html>
