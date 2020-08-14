@@ -20,7 +20,7 @@ class Weather:
 
     def refresh(self, city_name_):
         try:
-            if not city_name:
+            if not city_name_:
                 city_name_ = 'Moscow'
             self.settings = {
                             'q': city_name_,
@@ -28,12 +28,16 @@ class Weather:
                             'units': 'metric'
                             }
             response = requests.get(self.server, params=self.settings)
+    
             self.weather_data = json.loads(response.text)
             self.set_settings()
             self.set_city_name(city_name_)
             self.set_wind_setting()
         except:
-            self.weather_data = {'message': 'error_connect'}
+            self.weather_data = {
+                                 'message': 'error_connect',
+                                 'cod_error': err
+                                }
 
     def set_city_name(self, _city_name):
         self.city_name = _city_name
@@ -59,7 +63,8 @@ class Weather:
                         'city': self.city(),
                         'temp': str(self.temp()) + self.temp_settings,
                         'pressure': self.pressure(),
-                        'speed_wind': str(self.speed_wind()) + self.wind_setting,
+                        'speed_wind': str(
+                                 self.speed_wind()) + self.wind_setting,
                         'date': self.timestamp(format_time),
                         'ai': self.ai()
                         }
@@ -72,9 +77,9 @@ class Weather:
                        }
             if self.weather_data['cod'] == '404':
                 return {
-                       'app_name': self.app_name,
-                       'message': 'City not found',
-                       'cod_error': self.weather_data['cod']
+                        'app_name': self.app_name,
+                        'message': 'City not found',
+                        'cod_error': self.weather_data['cod']
                        }
 
             else:

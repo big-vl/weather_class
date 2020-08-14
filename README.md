@@ -30,6 +30,7 @@ Default:
 Error connect - wrong internet connection \
 Error content - wrong API key or wrong request
 # Log change
+check spelling PEP8
 Add code error display \
 401 - api key not correct
 
