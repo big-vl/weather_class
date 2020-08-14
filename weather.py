@@ -10,22 +10,24 @@ app = Flask(__name__)
 
 class Weather:
 
-    def __init__(self, app_name, api_key, server, city_name=False):
+    def __init__(self, app_name, api_key, server,
+                 city_name=False, debug=True):
         self.app_name = app_name
         self.city_name = city_name
         self.api_key = api_key
         self.server = server
         self.weather_data = []
         self.refresh(self.city_name)
+        self.debug = debug
 
-    def refresh(self, city_name_):
+    def refresh(self, city_name_, metric='metric'):
         try:
             if len(str(city_name_)) < 3:
                 city_name_ = 'Moscow'
             self.settings = {
                             'q': city_name_,
                             'appid': self.api_key,
-                            'units': 'metric'
+                            'units': metric
                             }
             response = requests.get(self.server, params=self.settings)
             self.weather_data = json.loads(response.text)
@@ -72,11 +74,18 @@ class Weather:
                         }
             return _content
         elif ('message' in self.weather_data):
+            return self.error_log()
+
+    def error_log(self):
             if self.weather_data['cod'] == '0000':
+                if self.debug:
+                    debug_message = self.weather_data['message']
+                else:
+                    debug_message = 'pleas debug True more information'
                 return {
                         'app_name': self.app_name,
                         'message': 'Error connect',
-                        'cod': self.weather_data['cod']
+                        'cod': debug_message
                        }
             if self.weather_data['cod'] == '404':
                 return {
@@ -132,8 +141,8 @@ def mini_weather():
     app_name = 'Weather Mini'
     city_name = 'Krasnodar'
     api_key = 'a5f756f97a8cf1082787e8d36699c449'
-    server = 'http://api.openweathermap.org/data/2.5/weather'
-    weather = Weather(app_name, api_key, server, city_name)
+    server = 'http://api.opnweathermap.org/data/2.5/weather'
+    weather = Weather(app_name, api_key, server, city_name, debug=True)
     if request.method == 'POST':
         city_name = request.form['city']
         weather.refresh(request.form['city'])
