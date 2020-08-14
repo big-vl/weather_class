@@ -13,7 +13,6 @@ class Weather:
     def __init__(self, app_name, api_key, server, city_name=False):
         self.app_name = app_name
         self.city_name = city_name
-        print(self.city_name)
         self.api_key = api_key
         self.server = server
         self.weather_data = []
