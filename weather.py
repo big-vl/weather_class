@@ -35,7 +35,8 @@ class Weather:
         except IOError as error:
             print('Class Weather Error connect:', error)
             self.weather_data = {
-                                 'message': 'error_connect'
+                                 'cod': '0000',
+                                 'message': error
                                 }
 
     def set_city_name(self, _city_name):
@@ -66,29 +67,29 @@ class Weather:
                         'speed_wind': str(
                                  self.speed_wind()) + self.wind_setting,
                         'date': self.timestamp(format_time),
+                        'city': self.city(),
                         'ai': self.ai()
                         }
             return _content
         elif ('message' in self.weather_data):
-            if self.weather_data['message'] == 'error_connect':
+            if self.weather_data['cod'] == '0000':
                 return {
                         'app_name': self.app_name,
-                        'message': 'Error connect'
+                        'message': 'Error connect',
+                        'cod': self.weather_data['cod']
                        }
             if self.weather_data['cod'] == '404':
                 return {
                         'app_name': self.app_name,
                         'message': 'City not found',
-                        'cod_error': self.weather_data['cod']
+                        'cod': self.weather_data['cod']
                        }
-
             else:
                 return {
                         'app_name': self.app_name,
                         'message': 'Error content',
-                        'cod_error': self.weather_data['cod']
+                        'cod': self.weather_data['cod']
                         }
-                return mess
 
     def ai(self):
         temp = int(self.temp())
