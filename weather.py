@@ -20,7 +20,7 @@ class Weather:
 
     def refresh(self, city_name_):
         try:
-            if not city_name_:
+            if len(city_name_) < 3:
                 city_name_ = 'Moscow'
             self.settings = {
                             'q': city_name_,
@@ -28,15 +28,14 @@ class Weather:
                             'units': 'metric'
                             }
             response = requests.get(self.server, params=self.settings)
-    
             self.weather_data = json.loads(response.text)
             self.set_settings()
             self.set_city_name(city_name_)
             self.set_wind_setting()
-        except:
+        except IOError as error:
+            print('Class Weather Error connect:', error)
             self.weather_data = {
-                                 'message': 'error_connect',
-                                 'cod_error': err
+                                 'message': 'error_connect'
                                 }
 
     def set_city_name(self, _city_name):
@@ -59,7 +58,8 @@ class Weather:
     def content(self, format_time='%Y-%m-%d %H:%M:%S'):
         if (len(self.weather_data) != 0) and (
                               'message' not in self.weather_data):
-            _content = {'app_name': self.app_name,
+            _content = {
+                        'app_name': self.app_name,
                         'city': self.city(),
                         'temp': str(self.temp()) + self.temp_settings,
                         'pressure': self.pressure(),
@@ -92,7 +92,8 @@ class Weather:
 
     def ai(self):
         temp = int(self.temp())
-        ai_answer = {-60: 'Наступил ледниковый период',
+        ai_answer = {
+                     -60: 'Наступил ледниковый период',
                      -30: 'Даже медведям холодно:)',
                      -25: 'Оденьте шубу',
                      -15: 'Нужна телогрейка',
@@ -103,7 +104,7 @@ class Weather:
                      25: 'Шорты и майка ваша одежда',
                      30: 'Жара выходите в плавках:)',
                      68: 'Пустыня Деште-Лут, на юго-востоке Ирана',
-                     800: 'Все горит! :)'}
+                    }
         number = (min((abs(n-temp), n) for n in ai_answer.keys())[1])
         return ai_answer[number]
 
