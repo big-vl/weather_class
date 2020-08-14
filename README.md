@@ -40,6 +40,7 @@ Max retries exceeded with url:
 Error connect - wrong internet connection \
 Error content - wrong API key or wrong request
 # Log change
+add show: Direction of the wind
 add debug variable
 add print error connect terminal
 check spelling PEP8
