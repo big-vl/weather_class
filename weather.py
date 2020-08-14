@@ -10,23 +10,23 @@ app = Flask(__name__)
 
 class Weather:
 
-    def __init__(self, app_name, api_key, server, city_name=False):
+    def __init__(self, app_name, api_key, server,
+                 city_name=False, debug=True):
         self.app_name = app_name
         self.city_name = city_name
         self.api_key = api_key
         self.server = server
         self.weather_data = []
         self.refresh(self.city_name)
+        self.debug = debug
 
-    def refresh(self, city_name_):
+    def refresh(self, city_name_, metric='metric'):
         try:
             if len(str(city_name_)) < 3:
                 city_name_ = 'Moscow'
-            self.settings = {
-                            'q': city_name_,
-                            'appid': self.api_key,
-                            'units': 'metric'
-                            }
+            self.settings = {'q': city_name_,
+                             'appid': self.api_key,
+                             'units': metric}
             response = requests.get(self.server, params=self.settings)
             self.weather_data = json.loads(response.text)
             self.set_settings()
@@ -34,10 +34,8 @@ class Weather:
             self.set_wind_setting()
         except IOError as error:
             print('Class Weather Error connect:', error)
-            self.weather_data = {
-                                 'cod': '0000',
-                                 'message': error
-                                }
+            self.weather_data = {'cod': '0000',
+                                 'message': error}
 
     def set_city_name(self, _city_name):
         self.city_name = _city_name
@@ -59,42 +57,40 @@ class Weather:
     def content(self, format_time='%Y-%m-%d %H:%M:%S'):
         if (len(self.weather_data) != 0) and (
                               'message' not in self.weather_data):
-            _content = {
-                        'app_name': self.app_name,
+            _content = {'app_name': self.app_name,
                         'city': self.city(),
                         'temp': str(self.temp()) + self.temp_settings,
                         'pressure': self.pressure(),
                         'speed_wind': str(
                                  self.speed_wind()) + self.wind_setting,
                         'date': self.timestamp(format_time),
-                        'city': self.city(),
-                        'ai': self.ai()
-                        }
+                        'deg_wind': str(self.deg_wind()),
+                        'ai': self.ai()}
             return _content
         elif ('message' in self.weather_data):
+            return self.error_log()
+
+    def error_log(self):
             if self.weather_data['cod'] == '0000':
-                return {
-                        'app_name': self.app_name,
+                if self.debug:
+                    debug_message = self.weather_data['message']
+                else:
+                    debug_message = 'pleas debug True more information'
+                return {'app_name': self.app_name,
                         'message': 'Error connect',
-                        'cod': self.weather_data['cod']
-                       }
+                        'cod': debug_message}
             if self.weather_data['cod'] == '404':
-                return {
-                        'app_name': self.app_name,
+                return {'app_name': self.app_name,
                         'message': 'City not found',
-                        'cod': self.weather_data['cod']
-                       }
+                        'cod': self.weather_data['cod']}
             else:
-                return {
-                        'app_name': self.app_name,
+                return {'app_name': self.app_name,
                         'message': 'Error content',
-                        'cod': self.weather_data['cod']
-                        }
+                        'cod': self.weather_data['cod']}
 
     def ai(self):
         temp = int(self.temp())
-        ai_answer = {
-                     -60: 'Наступил ледниковый период',
+        ai_answer = {-60: 'Наступил ледниковый период',
                      -30: 'Даже медведям холодно:)',
                      -25: 'Оденьте шубу',
                      -15: 'Нужна телогрейка',
@@ -104,8 +100,7 @@ class Weather:
                      18: 'Прохладно, лучше утеплится',
                      25: 'Шорты и майка ваша одежда',
                      30: 'Жара выходите в плавках:)',
-                     68: 'Пустыня Деште-Лут, на юго-востоке Ирана',
-                    }
+                     68: 'Пустыня Деште-Лут, на юго-востоке Ирана'}
         number = (min((abs(n-temp), n) for n in ai_answer.keys())[1])
         return ai_answer[number]
 
@@ -114,6 +109,14 @@ class Weather:
 
     def pressure(self):
         return self.weather_data['main']['pressure']
+
+    def deg_wind(self):
+        _wind = self.weather_data['wind']['deg']
+        _tend = ['Север', 'Северо-Восток', 'Восток',
+                'Юго-Восток', 'Юг', 'Юго-Запад',
+                'Запад', 'Северо-Запад']
+        _index = round((_wind/8)/5,625)
+        return _tend[int(_index)]
 
     def speed_wind(self):
         return self.weather_data['wind']['speed']
@@ -133,7 +136,7 @@ def mini_weather():
     city_name = 'Krasnodar'
     api_key = 'a5f756f97a8cf1082787e8d36699c449'
     server = 'http://api.openweathermap.org/data/2.5/weather'
-    weather = Weather(app_name, api_key, server, city_name)
+    weather = Weather(app_name, api_key, server, city_name, debug=True)
     if request.method == 'POST':
         city_name = request.form['city']
         weather.refresh(request.form['city'])
