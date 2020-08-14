@@ -113,9 +113,11 @@ class Weather:
     def deg_wind(self):
         _wind = self.weather_data['wind']['deg']
         _tend = ['Север', 'Северо-Восток', 'Восток',
-                'Юго-Восток', 'Юг', 'Юго-Запад',
-                'Запад', 'Северо-Запад']
-        _index = round((_wind/8)/5,625)
+                 'Юго-Восток', 'Юг', 'Юго-Запад',
+                 'Запад', 'Северо-Запад']
+        _index = round((_wind/8)/6)
+        if _index >= 8:
+            _index = 0
         return _tend[int(_index)]
 
     def speed_wind(self):
