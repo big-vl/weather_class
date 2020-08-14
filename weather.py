@@ -13,6 +13,7 @@ class Weather:
     def __init__(self, app_name, api_key, server, city_name=False):
         self.app_name = app_name
         self.city_name = city_name
+        print(self.city_name)
         self.api_key = api_key
         self.server = server
         self.weather_data = []
@@ -20,7 +21,7 @@ class Weather:
 
     def refresh(self, city_name_):
         try:
-            if len(city_name_) < 3:
+            if len(str(city_name_)) < 3:
                 city_name_ = 'Moscow'
             self.settings = {
                             'q': city_name_,
