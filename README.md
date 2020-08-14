@@ -21,7 +21,7 @@ you can use no set city_map, default city Moscow
 for refresh (update weather data) use method class: 
 ```weather.refresh(request.form["city"])```
 #### Options
-method weather.content() support any format date \
+```method weather.content()``` support any format date \
 Example: 
 ```weather.content("%d.%m.%Y %H:%M:%S")```
 Default:
