@@ -17,6 +17,12 @@ city_name = 'Krasnodar'
 weather = Weather(app_name, api_key, server, city_name)
 ```
 you can use no set city_map, default city Moscow
+#### Autoselect parse type server
+You can use api server link: \
+```server = 'http://api.openweathermap.org/data/2.5/weather'``` 
+##### or
+```server = 'http://api.openweathermap.org/data/2.5/onecall'``` \
+Weather Class auto select parse type data
 #### Refresh weather
 for refresh (update weather data) use method class: \
 ```weather.refresh(request.form["city"])```
@@ -40,6 +46,10 @@ Max retries exceeded with url:
 Error connect - wrong internet connection \
 Error content - wrong API key or wrong request
 # Log change
+add: auto select parse data \
+*the problem of choosing the weather arose when changing the
+API server, I decided to automatically compose
+a request for any API server.*  \
 add show: Direction of the wind \
 add debug variable \
 add print error connect terminal \
