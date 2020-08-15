@@ -29,6 +29,7 @@ class Weather:
                              'units': metric}
             response = requests.get(self.server, params=self.settings)
             self.weather_data = json.loads(response.text)
+            print(self.weather_data)
             self.set_settings()
             self.set_city_name(city_name_)
             self.set_wind_setting()

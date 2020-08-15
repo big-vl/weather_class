@@ -27,7 +27,7 @@ Example: \
 Default: \
 ```%Y-%m-%d %H:%M:%S```
 ## Debug
-```weather = Weather(app_name, api_key, server, city_name, debug=False)```
+```weather = Weather(app_name, api_key, server, city_name, debug=False)``` \
 **True** - debuger more information problem connect for request \
 Example: \
 ```
