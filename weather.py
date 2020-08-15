@@ -1,9 +1,11 @@
 import requests
 import json
+import re
 from datetime import datetime
 from flask import Flask
 from flask import render_template
 from flask import request
+from geopy.geocoders import Nominatim
 
 app = Flask(__name__)
 
@@ -20,13 +22,21 @@ class Weather:
         self.refresh(self.city_name)
         self.debug = debug
 
+    def manager_city(self, city_name_):
+        geolocator = Nominatim(user_agent=self.app_name)
+        location = geolocator.geocode(city_name_)
+        return (location.latitude, location.longitude)
+        
     def refresh(self, city_name_, metric='metric'):
         try:
             if len(str(city_name_)) < 3:
                 city_name_ = 'Moscow'
-            self.settings = {'q': city_name_,
-                             'appid': self.api_key,
-                             'units': metric}
+            lat, lon = self.manager_city(city_name_)
+            self.settings = {'appid': self.api_key,
+                             'units': metric,
+                             'exclude': 'daily',
+                             'lang': 34}
+            self.select_auto_server(city_name_, lat, lon)
             response = requests.get(self.server, params=self.settings)
             self.weather_data = json.loads(response.text)
             print(self.weather_data)
@@ -38,6 +48,18 @@ class Weather:
             self.weather_data = {'cod': '0000',
                                  'message': error}
 
+    def select_auto_server(self, city_name_, lat, lon):
+        if re.search('onecall', self.server):
+            _lat_lon = {'lon': lon, 'lat': lat}
+            _settings = self.settings.copy()
+            _settings.update(_lat_lon)
+            self.settings = _settings
+        elif re.search('weather', self.server):
+            _query = {'q': city_name_}
+            _settings = self.settings.copy()
+            _settings.update(_query)
+            self.settings = _settings
+            
     def set_city_name(self, _city_name):
         self.city_name = _city_name
 
@@ -72,22 +94,22 @@ class Weather:
             return self.error_log()
 
     def error_log(self):
-            if self.weather_data['cod'] == '0000':
-                if self.debug:
-                    debug_message = self.weather_data['message']
-                else:
-                    debug_message = 'pleas debug True more information'
-                return {'app_name': self.app_name,
-                        'message': 'Error connect',
-                        'cod': debug_message}
-            if self.weather_data['cod'] == '404':
-                return {'app_name': self.app_name,
-                        'message': 'City not found',
-                        'cod': self.weather_data['cod']}
+        if self.weather_data['cod'] == '0000':
+            if self.debug:
+                debug_message = self.weather_data['message']
             else:
-                return {'app_name': self.app_name,
-                        'message': 'Error content',
-                        'cod': self.weather_data['cod']}
+                debug_message = 'pleas debug True more information'
+            return {'app_name': self.app_name,
+                    'message': 'Error connect',
+                    'cod': debug_message}
+        if self.weather_data['cod'] == '404':
+            return {'app_name': self.app_name,
+                    'message': 'City not found',
+                    'cod': self.weather_data['cod']}
+        else:
+            return {'app_name': self.app_name,
+                    'message': 'Error content',
+                    'cod': self.weather_data['cod']}
 
     def ai(self):
         temp = int(self.temp())
@@ -106,13 +128,20 @@ class Weather:
         return ai_answer[number]
 
     def temp(self):
+        if 'main' not in self.weather_data:
+            return self.weather_data['current']['temp']
         return self.weather_data['main']['temp']
 
     def pressure(self):
+        if 'main' not in self.weather_data:
+            return self.weather_data['current']['pressure']
         return self.weather_data['main']['pressure']
 
     def deg_wind(self):
-        _wind = self.weather_data['wind']['deg']
+        if 'main' not in self.weather_data:
+            _wind = self.weather_data['current']['wind_deg']
+        else:
+            _wind = self.weather_data['wind']['deg']
         _tend = ['Север', 'Северо-Восток', 'Восток',
                  'Юго-Восток', 'Юг', 'Юго-Запад',
                  'Запад', 'Северо-Запад']
@@ -120,13 +149,28 @@ class Weather:
         return _tend[int(_index)]
 
     def speed_wind(self):
+        if 'main' not in self.weather_data:
+            return self.weather_data['current']['wind_speed']
         return self.weather_data['wind']['speed']
 
+    def city_geolocator(self):
+        if 'lat' and 'lon' in self.settings:
+            lat_lon = (self.settings['lat'], self.settings['lon'])
+            geolocator = Nominatim(user_agent=self.app_name)
+            location = geolocator.reverse(lat_lon)
+            return location.raw
+        
     def city(self):
+        if 'name' not in self.weather_data:
+            return self.city_geolocator()['address']['city']
         return self.weather_data['name']
 
     def timestamp(self, format_time):
-        _timestamp = datetime.fromtimestamp(self.weather_data['dt'])
+        if 'dt' not in self.weather_data:
+            date_ = self.weather_data['current']['dt']
+        else:
+            date_ = self.weather_data['dt']
+        _timestamp = datetime.fromtimestamp(date_)
         _timestamp = _timestamp.strftime(format_time)
         return _timestamp
 
@@ -136,7 +180,7 @@ def mini_weather():
     app_name = 'Weather Mini'
     city_name = 'Krasnodar'
     api_key = 'a5f756f97a8cf1082787e8d36699c449'
-    server = 'http://api.openweathermap.org/data/2.5/weather'
+    server = 'http://api.openweathermap.org/data/2.5/onecall'
     weather = Weather(app_name, api_key, server, city_name, debug=True)
     if request.method == 'POST':
         city_name = request.form['city']
