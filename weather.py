@@ -21,16 +21,19 @@ class Weather:
         self.weather_data = []
         self.refresh(self.city_name)
         self.debug = debug
+        self.default_city = 'Moscow'
 
     def manager_city(self, city_name_):
         geolocator = Nominatim(user_agent=self.app_name)
         location = geolocator.geocode(city_name_)
+        if location is None:
+            location = geolocator.geocode(self.default_city)
         return (location.latitude, location.longitude)
-        
+
     def refresh(self, city_name_, metric='metric'):
         try:
             if len(str(city_name_)) < 3:
-                city_name_ = 'Moscow'
+                city_name_ = self.default_city
             lat, lon = self.manager_city(city_name_)
             self.settings = {'appid': self.api_key,
                              'units': metric,
@@ -59,7 +62,7 @@ class Weather:
             _settings = self.settings.copy()
             _settings.update(_query)
             self.settings = _settings
-            
+
     def set_city_name(self, _city_name):
         self.city_name = _city_name
 
@@ -159,7 +162,7 @@ class Weather:
             geolocator = Nominatim(user_agent=self.app_name)
             location = geolocator.reverse(lat_lon)
             return location.raw
-        
+
     def city(self):
         if 'name' not in self.weather_data:
             return self.city_geolocator()['address']['city']
