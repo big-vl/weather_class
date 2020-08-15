@@ -27,7 +27,7 @@ Example: \
 Default: \
 ```%Y-%m-%d %H:%M:%S```
 ## Debug
-```weather = Weather(app_name, api_key, server, city_name, debug=False)```
+```weather = Weather(app_name, api_key, server, city_name, debug=False)``` \
 **True** - debuger more information problem connect for request \
 Example: \
 ```
@@ -40,9 +40,9 @@ Max retries exceeded with url:
 Error connect - wrong internet connection \
 Error content - wrong API key or wrong request
 # Log change
-add show: Direction of the wind
-add debug variable
-add print error connect terminal
+add show: Direction of the wind \
+add debug variable \
+add print error connect terminal \
 check spelling PEP8
 Add code error display \
 401 - api key not correct
