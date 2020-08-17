@@ -13,7 +13,7 @@ app = Flask(__name__)
 class Weather:
 
     def __init__(self, app_name, api_key, server,
-                 city_name=False, debug=True):
+                 city_name=False, debug=True, mini=True):
         self.app_name = app_name
         self.city_name = city_name
         self.api_key = api_key
@@ -21,7 +21,12 @@ class Weather:
         self.weather_data = []
         self.refresh(self.city_name)
         self.debug = debug
+        self.mini = mini
         self.default_city = 'Moscow'
+        self.time_period = {'morn': 'Утром:',
+                            'day': 'Днем:',
+                            'eve': 'Вечером',
+                            'night': 'Ночью:'}
 
     def manager_city(self, city_name_):
         geolocator = Nominatim(user_agent=self.app_name)
@@ -37,12 +42,10 @@ class Weather:
             lat, lon = self.manager_city(city_name_)
             self.settings = {'appid': self.api_key,
                              'units': metric,
-                             'exclude': 'daily',
                              'lang': 34}
             self.select_auto_server(city_name_, lat, lon)
             response = requests.get(self.server, params=self.settings)
             self.weather_data = json.loads(response.text)
-            print(self.weather_data)
             self.set_settings()
             self.set_city_name(city_name_)
             self.set_wind_setting()
@@ -91,10 +94,31 @@ class Weather:
                                  self.speed_wind()) + self.wind_setting,
                         'date': self.timestamp(format_time),
                         'deg_wind': str(self.deg_wind()),
-                        'ai': self.ai()}
-            return _content
+                        'ai': self.select_ai()}
+            if self.mini:
+                text = f'температура - {str(self.temp())} {self.temp_settings},'
+                text += f'давление - {self.pressure()} ,'
+                text += f'скорость ветра - {self.deg_wind()}, '
+                text += f'Что надеть: {self.select_ai()}'
+                return text
+            else:
+                return _content
         elif ('message' in self.weather_data):
             return self.error_log()
+
+    def select_ai(self):
+        if 'daily' in self.weather_data:
+            if 'feels_like' in self.weather_data['daily'][0]:
+                items = self.weather_data['daily'][0]['feels_like']
+                ai_li = str()
+                for timi, temp in items.items():
+                    print(timi, temp)
+                    if timi not in self.time_period:
+                        continue
+                    ai_li += self.time_period[timi]+self.ai(temp)+'<br>'
+                return ai_li
+        else:
+            return self.ai(self.temp())
 
     def error_log(self):
         if self.weather_data['cod'] == '0000':
@@ -114,8 +138,8 @@ class Weather:
                     'message': 'Error content',
                     'cod': self.weather_data['cod']}
 
-    def ai(self):
-        temp = int(self.temp())
+    def ai(self, temp_):
+        temp = int(temp_)
         ai_answer = {-60: 'Наступил ледниковый период',
                      -30: 'Даже медведям холодно:)',
                      -25: 'Оденьте шубу',
@@ -184,11 +208,15 @@ def mini_weather():
     city_name = 'Krasnodar'
     api_key = 'a5f756f97a8cf1082787e8d36699c449'
     server = 'http://api.openweathermap.org/data/2.5/onecall'
-    weather = Weather(app_name, api_key, server, city_name, debug=True)
+    weather = Weather(app_name, api_key, server,
+                      city_name, debug=True, mini=True)
     if request.method == 'POST':
         city_name = request.form['city']
         weather.refresh(request.form['city'])
-    return render_template('index.html', **weather.content())
+    if weather.mini:
+        return weather.content()
+    else:
+        return render_template('index.html', **weather.content())
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)

@@ -9,7 +9,7 @@
 	Температура - {{ temp }} <br>
 	Давление - {{ pressure }} <br>
 	Скорость ветра - {{ speed_wind }} направление ветра: {{ deg_wind }}<br>
-	Совет от {{ app_name }}: {{ ai }}
+	Совет от {{ app_name }}: {{ ai|safe }}
 	<form action="/" method="POST">
 	  <label for="city_label">Введите город:</label><br>
 	  <input type="text" id="city_label" name="city" value="{{ city }}">
